@@ -1,0 +1,261 @@
+<div class="main_section">
+	<div class="container-fluid mt-4 mr-4">
+
+		<div class="chat_container">
+
+			<!--message_section-->
+			<div class="col-sm-9 message_section">
+
+				<div id="dlt"> <a href="javascript:">ডিলেট<i class="fas fa-trash-alt"></i></a></div>
+
+				<!--new_message_head-->
+				<div class="row">
+					<div class="new_message_head">
+					</div>
+				</div>
+				<!--new_message_head-->
+
+
+				<!--chat_area-->
+				<div id="chat1" class="chat_area ">
+					<a href="javascript:" id="jump-to-last"><i class="icon-chevron-up">&#9660;</i></a>
+
+					<div id="loadmore" style="text-align: center;">
+						<a href="javascript:">আরো দেখব</a>
+					</div>
+
+					<ul id="chat" class="list-unstyled">
+					</ul>
+				</div>
+				<!--chat_area-->
+
+
+				<!--message_write-->
+				<div id="messageForm" class="message_write">
+					<textarea id="message" class="form-control" placeholder="এখানে লিখুন..." autofocus></textarea>
+					<div class="clearfix "></div>
+					<!--	<div class="chat_bottom "><a href="# " class="pull-left upload_btn "><i class="fa fa-cloud-upload " aria-hidden="true "></i>
+												Add Files</a>
+												<a href="# " class="pull-right btn btn-success ">
+												Send</a>
+										 </div>-->
+				</div>
+				<!--message_write-->
+
+			</div>
+
+			<!--message_section-->
+
+			<!--chat_sidebar-->
+			<div class="col-sm-3 chat_sidebar float-right ">
+				<div class="row ">
+					<div class="new_message_head" id="time"> <button id="button" type="button" class="btn btn-danger"
+							style="float: right; margin-right: 10px; margin-top: -58px;">লগ আউট</button>
+					</div>
+
+					<div id="dwn">
+						<a href="javascript:">ডাউনলোড<i class="fas fa-arrow-circle-down"></i></a>
+					</div>
+
+					<div class="member_list style=" width: 100%;">
+						<ul id="users" class="list-unstyled">
+
+						</ul>
+					</div>
+					<div class="new_message_head"> </div>
+				</div>
+
+			</div>
+			<!--chat_sidebar-->
+			<h2 style="display:none;" id="usr"><%=name %></h2>
+
+		</div>
+	</div>
+</div>
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+	integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous" />
+
+
+<script>
+
+	$(function () {
+		var socket = io.connect();
+		var $messageForm = $('#messageForm');
+		var $message = $('#message');
+		var $chat = $('#chat');
+		var $chat1 = $('#chat1');
+		var $users = $('#users');
+		var $user = $('#usr').html();
+		var $lmore = $('#loadmore');
+		var $dwn = $('#dwn');
+		var $delete = $('#dlt');
+
+
+		// Logout
+		$("#button").click(function () {
+
+			socket.emit('lg', $user);
+			window.location.href = '/users/logout';
+
+		});
+
+		// Remove logout user
+		socket.on('lgUser', function (data) {
+			$("ul#users > li").each(function (index) {
+
+				if ($(this).text().split(" ", 1) == data) {
+					$(this).fadeOut("normal", function () {
+						$(this).remove();
+					});
+				}
+			});
+		});
+
+
+		// Append new user
+		socket.on('nUser', function (data) {
+			var nouser = true;
+			$("ul#users > li").each(function (index) {
+
+				if ($(this).text().split(" ", 1) == data.user) {
+					nouser = false;
+				}
+			});
+
+			if (nouser) {
+				$users.append('<li class="left clearfix"><div class="header_sec"><strong class="primary-font"><mark>' + data.user + '</mark></strong> <i class="pull-right">' + data.time + '</i></div></li>').fadeIn(2000);
+			}
+
+		});
+
+		// Users list append
+		socket.on('get users', function (data) {
+
+			for (i = 0; i < data.length; i++) {
+			
+			$users.append('<li class="left clearfix"><div class="header_sec"><strong class="primary-font"><mark>' + data[i].username + '</mark></strong> <i class="pull-right">' + data[i].time + '</i></div></li>');
+
+			}
+		});
+
+		// Refresh users list
+		socket.on('refresh', function(data) {
+					$("ul#users > li").each(function (index) {
+
+				if ($(this).text().split(" ", 1) == $user) {
+
+					let t = $(this).text().split(" ");
+					t = t[1] + " " + t[2];
+					socket.emit('username', { user: $user, time: t });
+					$users.fadeOut("normal").html('');
+				}
+			});
+		});
+		
+		// Message submission
+		$messageForm.keypress(function (e) {
+			if (e.which == 13 && !e.shiftKey) {
+				msg = $message.val();
+				if ($.trim(msg).length > 0) {
+					let t = moment().tz('Asia/Dhaka').format('a h:mm');
+					socket.emit('send message', { user: $user, msg: msg, time: t });
+					$message.val('');
+					$chat.append('<li class="pending">ম্যাসেজ পাঠানো হচ্ছে...</li>');
+					$chat1.scrollTop($chat.get(0).scrollHeight);
+				}
+			}
+		});
+
+		// New message append
+		socket.on('new message', function (data) {
+
+			$('ul#chat > li.pending').remove();
+
+			$chat.append('<li class="left clearfix "> <div class="chat-body1 clearfix "> <p><strong class="text-primary">' + data.user + ': </strong>' + data.msg + '<i class="text-muted">' + data.time + '</i></p> </div> </li>');
+
+			const element = document.querySelector('#jump-to-last')
+			const value = element.style.display
+
+			if (value == '' || value == "undefined" || value == "none") {
+				$chat1.scrollTop($chat.get(0).scrollHeight);
+
+			}
+		});
+
+
+		// Old message prepend on startup
+		socket.on('output', function (data) {
+
+			let t = moment().tz('Asia/Dhaka').format('a h:mm');
+			socket.emit('username', { user: $user, time: t });
+
+			if (data.length) {
+				for (var x = 0; x < data.length; x++) {
+					$chat.prepend('<li class="left clearfix "> <div class="chat-body1 clearfix "> <p><strong class="text-primary">' + data[x].name + ': </strong>' + data[x].message + '<i class="text-muted">' + data[x].time + '</i></p> </div> </li>');
+				}
+			}
+
+			$chat1.scrollTop($chat.get(0).scrollHeight);
+		});
+
+
+		// Load more message prepend
+		socket.on('lm-meesages', function (data) {
+			if (data.length) {
+				for (var x = 0; x < data.length; x++) {
+					$chat.prepend('<li class="left clearfix "> <div class="chat-body1 clearfix "> <p><strong class="text-primary">' + data[x].name + ': </strong>' + data[x].message + '<i class="text-muted">' + data[x].time + '</i></p> </div> </li>');
+				}
+			} else { $lmore.hide(); }
+		});
+
+
+
+
+		// Jump to Last msg funtionality 
+		var jump_to_button = $('#jump-to-last');
+		$chat1.scroll(function () {
+
+			if ($chat1.scrollTop() == 0) {
+				$lmore.fadeIn(200);
+			} else { $lmore.fadeOut(200); }
+
+			var msgwind_height = $(this).height();
+			var msg_position = ($(this).get(0).scrollHeight - $(this).scrollTop()); /* Arbitrary calculation */
+			var scroll_distance = (msg_position - msgwind_height);
+			var lastmsg_height = $(this).find('li:last-child').height();
+			if (scroll_distance >= lastmsg_height) {
+				jump_to_button.fadeIn(200);    // Fade in the arrow
+			} else {
+				jump_to_button.fadeOut(200);   // Else fade out the arrow
+			}
+		});
+		jump_to_button.click(function () {      // When arrow is clicked
+			$chat1.animate({
+				scrollTop: $chat.get(0).scrollHeight       // Scroll to last msg
+			}, 500);
+		});
+
+
+		// load more onclick
+		$lmore.click(function () {
+
+			// load more message emit
+			var msgnow = $chat.children().length;
+			socket.emit('loadmore', msgnow);
+
+		});
+
+		// Download
+		$dwn.click(function () {
+			socket.emit('dwn');
+			window.open('/download', '_blank');
+		});
+
+		// Delete
+		$delete.click(function () {
+			socket.emit('dlt');
+			location.reload();
+		});
+	});
+</script>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>al-kamr</title>
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://bootswatch.com/4/journal/bootstrap.min.css"
+    />
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.23/moment-timezone-with-data-2012-2022.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/bn.js"></script>
+
+    <style type="text/css">
+      #custom-search-input {
+        background: #e8e6e7 none repeat scroll 0 0;
+        margin: 0;
+        padding: 10px;
+      }
+
+      #custom-search-input .search-query {
+        background: #fff none repeat scroll 0 0 !important;
+        border-radius: 4px;
+        height: 33px;
+        margin-bottom: 0;
+        padding-left: 7px;
+        padding-right: 7px;
+      }
+
+      #custom-search-input button {
+        background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
+        border: 0 none;
+        border-radius: 3px;
+        color: #666666;
+        left: auto;
+        margin-bottom: 0;
+        margin-top: 7px;
+        padding: 2px 5px;
+        position: absolute;
+        right: 0;
+        z-index: 9999;
+      }
+
+      .search-query:focus + button {
+        z-index: 3;
+      }
+
+      .all_conversation button {
+        background: #f5f3f3 none repeat scroll 0 0;
+        border: 1px solid #dddddd;
+        height: 38px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .all_conversation i {
+        background: #e9e7e8 none repeat scroll 0 0;
+        border-radius: 100px;
+        color: #636363;
+        font-size: 17px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        width: 30px;
+      }
+
+      .all_conversation .caret {
+        bottom: 0;
+        margin: auto;
+        position: absolute;
+        right: 15px;
+        top: 0;
+      }
+
+      .all_conversation .dropdown-menu {
+        background: #f5f3f3 none repeat scroll 0 0;
+        border-radius: 0;
+        margin-top: 0;
+        padding: 0;
+        width: 100%;
+      }
+
+      .all_conversation ul li {
+        border-bottom: 1px solid #dddddd;
+        line-height: normal;
+        width: 100%;
+      }
+
+      .all_conversation ul li a:hover {
+        background: #dddddd none repeat scroll 0 0;
+        color: #333;
+      }
+
+      .all_conversation ul li a {
+        color: #333;
+        line-height: 30px;
+        padding: 3px 20px;
+      }
+
+      .member_list .chat-body {
+        text-align: center;
+        margin-top: 0;
+      }
+
+      .top_nav {
+        overflow: visible;
+      }
+
+      .member_list .contact_sec {
+        margin-top: 3px;
+      }
+
+      .member_list li {
+        padding: 6px;
+      }
+
+      .member_list ul {
+        border: 1px solid #dddddd;
+      }
+
+      .chat-img img {
+        height: 34px;
+        width: 34px;
+      }
+
+      .member_list li {
+        border-bottom: 1px solid #dddddd;
+        padding: 6px;
+      }
+
+      .member_list li:last-child {
+        border-bottom: none;
+      }
+
+      .member_list {
+        height: 643px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: 100%;
+      }
+
+      .sub_menu_ {
+        background: #e8e6e7 none repeat scroll 0 0;
+        left: 100%;
+        max-width: 233px;
+        position: absolute;
+        width: 100%;
+      }
+
+      .sub_menu_ {
+        background: #f5f3f3 none repeat scroll 0 0;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        display: none;
+        left: 100%;
+        margin-left: 0;
+        max-width: 233px;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+
+      .all_conversation ul li:hover .sub_menu_ {
+        display: block;
+      }
+
+      .new_message_head {
+        background: #f5f3f3 none repeat scroll 0 0;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 30px 10px;
+        width: 100%;
+      }
+
+      .message_section {
+        border: 1px solid #dddddd;
+        overflow: hidden;
+      }
+
+      .chat_area {
+        float: left;
+        height: 604px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: 100%;
+      }
+
+      .chat_area li {
+        padding: 14px 14px 0;
+      }
+
+      .chat_area li .chat-img1 img {
+        height: 40px;
+        width: 40px;
+      }
+
+      .chat-body1 p {
+        background: #fbf9fa none repeat scroll 0 0;
+        padding: 6px;
+      }
+
+      .chat_area .admin_chat .chat-body1 {
+        margin-left: 0;
+        margin-right: 50px;
+      }
+
+      .chat_area li:last-child {
+        padding-bottom: 10px;
+      }
+
+      .message_write {
+        background: #f5f3f3 none repeat scroll 0 0;
+        float: left;
+        padding: 15px;
+        width: 100%;
+      }
+
+      .message_write textarea.form-control {
+        height: 70px;
+        padding: 10px;
+      }
+
+      .chat_bottom {
+        float: left;
+        margin-top: 13px;
+        width: 100%;
+      }
+
+      .upload_btn {
+        color: #777777;
+      }
+
+      .sub_menu_ > li a,
+      .sub_menu_ > li {
+        float: left;
+        width: 100%;
+      }
+
+      .member_list li:hover {
+        background: #428bca none repeat scroll 0 0;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .col-sm-9 {
+        max-width: 80%;
+        float: left;
+        padding: 1px;
+      }
+
+      .col-sm-3 {
+        max-width: 18%;
+        border: 1px solid #dddddd;
+      }
+
+      .dropup,
+      .dropright,
+      .dropdown,
+      .dropleft {
+        position: relative;
+        width: 100%;
+      }
+
+      .text-muted {
+        float: right;
+      }
+
+      .header_sec {
+        text-align: center;
+      }
+
+      #jump-to-last {
+        position: absolute;
+        bottom: 210px;
+        right: 90px;
+        background: #000;
+        background: rgba(0, 0, 0, 0.7);
+        width: 50px;
+        height: 50px;
+        display: block;
+        text-decoration: none;
+        -webkit-border-radius: 35px;
+        -moz-border-radius: 35px;
+        border-radius: 35px;
+        display: none;
+        -webkit-transition: all 0.3s linear;
+        -moz-transition: all 0.3s ease;
+        -ms-transition: all 0.3s ease;
+        -o-transition: all 0.3s ease;
+        transition: all 0.3s ease;
+      }
+
+      #jump-to-last i {
+        color: #fff;
+        margin: 0;
+        position: relative;
+        left: 16px;
+        top: 13px;
+        font-size: 19px;
+        -webkit-transition: all 0.3s ease;
+        -moz-transition: all 0.3s ease;
+        -ms-transition: all 0.3s ease;
+        -o-transition: all 0.3s ease;
+        transition: all 0.3s ease;
+      }
+
+      #jump-to-last:hover {
+        background: rgba(0, 0, 0, 0.9);
+      }
+
+      #jump-to-last:hover i {
+        color: #fff;
+        top: 5px;
+      }
+
+      ul#chat li.pending {
+        color: #aaa;
+      }
+
+      a#loadmore {
+        position: absolute;
+        display: block;
+        display: none;
+      }
+
+      a:hover {
+        text-decoration: none;
+      }
+
+      #dwn {
+        position: absolute;
+        display: block;
+        margin: 22px -138px;
+      }
+
+      #dlt {
+        display: block;
+        position: absolute;
+        margin: 20px 25px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <%- body %>
+  </body>
+</html>
